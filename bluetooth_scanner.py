@@ -859,8 +859,15 @@ class BluetoothApp:
         control_frame = tk.Frame(tab_frame, bg=t("bg"))
         self.tab_contents.append(control_frame)
 
-        self.control_inner = tk.Frame(control_frame, bg=t("bg"))
-        self.control_inner.pack(fill=tk.BOTH, expand=True)
+        self.control_canvas = tk.Canvas(control_frame, bg=t("bg"), highlightthickness=0)
+        self.control_scrollbar = tk.Scrollbar(control_frame, orient="vertical", command=self.control_canvas.yview)
+        self.control_inner = tk.Frame(self.control_canvas, bg=t("bg"))
+        self.control_inner.bind("<Configure>", lambda e: self.control_canvas.configure(scrollregion=self.control_canvas.bbox("all")))
+        self.control_window = self.control_canvas.create_window((0, 0), window=self.control_inner, anchor="nw")
+        self.control_canvas.configure(yscrollcommand=self.control_scrollbar.set)
+        self.control_canvas.pack(side="left", fill="both", expand=True)
+        self.control_scrollbar.pack(side="right", fill="y")
+        self.control_canvas.bind("<Configure>", lambda e: self.control_canvas.itemconfig(self.control_window, width=e.width))
 
         # Tab 4: Beveiliging
         security_frame = tk.Frame(tab_frame, bg=t("bg"))
@@ -876,12 +883,7 @@ class BluetoothApp:
         self.security_scrollbar.pack(side="right", fill="y")
         self.security_canvas.bind("<Configure>", lambda e: self.security_canvas.itemconfig(self.security_window, width=e.width))
 
-        # Tab 6: Update
-        update_frame = tk.Frame(tab_frame, bg=t("bg"))
-        self.tab_contents.append(update_frame)
-
-        self.update_inner = tk.Frame(update_frame, bg=t("bg"))
-        self.update_inner.pack(fill=tk.BOTH, expand=True)
+        # Tab 5: Batterij
         bat_frame = tk.Frame(tab_frame, bg=t("bg"))
         self.tab_contents.append(bat_frame)
 
@@ -895,6 +897,20 @@ class BluetoothApp:
         self.bat_scrollbar.pack(side="right", fill="y")
         self.bat_canvas.bind("<Configure>", lambda e: self.bat_canvas.itemconfig(self.bat_window, width=e.width))
 
+        # Tab 6: Update
+        update_frame = tk.Frame(tab_frame, bg=t("bg"))
+        self.tab_contents.append(update_frame)
+
+        self.update_canvas = tk.Canvas(update_frame, bg=t("bg"), highlightthickness=0)
+        self.update_scrollbar = tk.Scrollbar(update_frame, orient="vertical", command=self.update_canvas.yview)
+        self.update_inner = tk.Frame(self.update_canvas, bg=t("bg"))
+        self.update_inner.bind("<Configure>", lambda e: self.update_canvas.configure(scrollregion=self.update_canvas.bbox("all")))
+        self.update_window = self.update_canvas.create_window((0, 0), window=self.update_inner, anchor="nw")
+        self.update_canvas.configure(yscrollcommand=self.update_scrollbar.set)
+        self.update_canvas.pack(side="left", fill="both", expand=True)
+        self.update_scrollbar.pack(side="right", fill="y")
+        self.update_canvas.bind("<Configure>", lambda e: self.update_canvas.itemconfig(self.update_window, width=e.width))
+
         # Toon eerste tab
         for i, frame in enumerate(self.tab_contents):
             if i == 0:
@@ -905,6 +921,29 @@ class BluetoothApp:
         # Laad data
         self.load_paired_devices()
         self.refresh_battery_tab()
+
+        # Muiswiel scrolling voor alle canvassen
+        def on_mousewheel(event):
+            for canvas in [self.canvas, self.paired_canvas, self.local_canvas,
+                           self.control_canvas, self.security_canvas,
+                           self.bat_canvas, self.update_canvas]:
+                try:
+                    canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+                except Exception:
+                    pass
+
+        self.root.bind_all("<MouseWheel>", on_mousewheel)
+        self.root.bind_all("<Button-4>", lambda e: self._scroll_all(-1))
+        self.root.bind_all("<Button-5>", lambda e: self._scroll_all(1))
+
+    def _scroll_all(self, direction):
+        for canvas in [self.canvas, self.paired_canvas, self.local_canvas,
+                       self.control_canvas, self.security_canvas,
+                       self.bat_canvas, self.update_canvas]:
+            try:
+                canvas.yview_scroll(direction, "units")
+            except Exception:
+                pass
 
     def switch_tab(self, idx):
         self.current_tab = idx
