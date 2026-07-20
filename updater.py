@@ -19,8 +19,8 @@ import time
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 VERSION_FILE = os.path.join(APP_DIR, "version.json")
-UPDATE_URL = "https://raw.githubusercontent.com/esper/bluetooth-app/main/version.json"
-UPDATE_FILES_URL = "https://raw.githubusercontent.com/esper/bluetooth-app/main/"
+UPDATE_URL = "https://raw.githubusercontent.com/esperblok2/bluetooth-app/main/version.json"
+UPDATE_FILES_URL = "https://raw.githubusercontent.com/esperblok2/bluetooth-app/main/"
 BACKUP_DIR = os.path.join(APP_DIR, ".backup")
 AUTO_CHECK = True
 CHECK_INTERVAL = 3600  # 1 uur
