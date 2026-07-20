@@ -356,6 +356,7 @@
   ('glob', '/usr/lib/python3.14/glob.py', 'PYMODULE'),
   ('gzip', '/usr/lib/python3.14/gzip.py', 'PYMODULE'),
   ('hashlib', '/usr/lib/python3.14/hashlib.py', 'PYMODULE'),
+  ('hid_controller', '/home/esper/bluetooth-app/hid_controller.py', 'PYMODULE'),
   ('hmac', '/usr/lib/python3.14/hmac.py', 'PYMODULE'),
   ('http', '/usr/lib/python3.14/http/__init__.py', 'PYMODULE'),
   ('http.client', '/usr/lib/python3.14/http/client.py', 'PYMODULE'),
