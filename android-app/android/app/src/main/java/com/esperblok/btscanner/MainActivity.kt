@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var securityManager: SecurityManager
     lateinit var hidHelper: HidHelper
     lateinit var deviceNotesManager: DeviceNotesManager
+    lateinit var updateManager: UpdateManager
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -38,9 +40,11 @@ class MainActivity : AppCompatActivity() {
         securityManager = SecurityManager(this)
         hidHelper = HidHelper(this)
         deviceNotesManager = DeviceNotesManager(this)
+        updateManager = UpdateManager(this)
 
         bluetoothHelper.registerReceiver()
         requestBluetoothPermissions()
+        checkForUpdates()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
 
@@ -56,6 +60,42 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_security -> { loadFragment(SecurityFragment()); true }
                 R.id.nav_update -> { loadFragment(UpdateFragment()); true }
                 else -> false
+            }
+        }
+    }
+
+    private fun checkForUpdates() {
+        val currentVersion = try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.0"
+        } catch (e: Exception) {
+            "1.0"
+        }
+        updateManager.setCurrentVersion(currentVersion)
+
+        updateManager.checkForUpdates { hasUpdate, latestVersion, changelog ->
+            if (hasUpdate) {
+                runOnUiThread {
+                    AlertDialog.Builder(this)
+                        .setTitle("Update beschikbaar: v$latestVersion")
+                        .setMessage(buildString {
+                            appendLine("Er is een nieuwe versie beschikbaar!")
+                            if (changelog.isNotEmpty()) {
+                                appendLine()
+                                appendLine("Wat is er nieuw:")
+                                appendLine(changelog)
+                            }
+                            appendLine()
+                            appendLine("Automatisch downloaden en installeren?")
+                        })
+                        .setPositiveButton("Ja, update!") { _, _ ->
+                            updateManager.downloadAndInstall()
+                        }
+                        .setNegativeButton("Later") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .setCancelable(false)
+                        .show()
+                }
             }
         }
     }
@@ -120,5 +160,6 @@ class MainActivity : AppCompatActivity() {
         bluetoothHelper.stopScan()
         bluetoothHelper.unregisterReceiver()
         hidHelper.disconnect()
+        updateManager.cancelUpdate()
     }
 }

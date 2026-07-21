@@ -1,10 +1,5 @@
 {
-  "version": "2.1.0",
-  "name": "Bluetooth Scanner",
-  "min_version": "2.0.0",
-  "changelog": [
-    "Nieuwe tabs: Lokaal, Besturing, Beveiliging",
-    "Auto-update systeem",
-    "Beter design met neon thema's"
-  ]
+  "version": "1.0",
+  "changelog": "Eerste versie met auto-update",
+  "url": "https://github.com/esperblok2/bluetooth-app/raw/main/BT-Scanner-Native.apk"
 }

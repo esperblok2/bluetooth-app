@@ -1,7 +1,5 @@
 package com.esperblok.btscanner.fragments
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,20 +7,16 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import com.esperblok.btscanner.MainActivity
 import com.esperblok.btscanner.R
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.URL
+import com.esperblok.btscanner.UpdateManager
 
 class UpdateFragment : Fragment() {
 
-    private val GITHUB_URL = "https://raw.githubusercontent.com/esperblok2/bluetooth-app/main/version.json"
-    private val APK_URL = "https://github.com/esperblok2/bluetooth-app/raw/main/BT-Scanner-Native.apk"
-    private val CURRENT_VERSION = "1.0"
+    private lateinit var updateManager: UpdateManager
+    private var currentVersion = "1.0"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_update, container, false)
@@ -30,14 +24,23 @@ class UpdateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val tvVersion = view.findViewById<TextView>(R.id.tv_current_version)
+        updateManager = (activity as MainActivity).updateManager
+        currentVersion = updateManager.let {
+            try {
+                requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName ?: "1.0"
+            } catch (e: Exception) {
+                "1.0"
+            }
+        }
+
+        val tvCurrent = view.findViewById<TextView>(R.id.tv_current_version)
         val tvLatest = view.findViewById<TextView>(R.id.tv_latest_version)
         val tvStatus = view.findViewById<TextView>(R.id.tv_update_status)
         val btnCheck = view.findViewById<Button>(R.id.btn_check_update)
         val btnDownload = view.findViewById<Button>(R.id.btn_download)
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_update)
 
-        tvVersion.text = "Huidige versie: $CURRENT_VERSION"
+        tvCurrent.text = "Huidige versie: $currentVersion"
         btnDownload.visibility = View.GONE
         progressBar.visibility = View.GONE
 
@@ -46,35 +49,42 @@ class UpdateFragment : Fragment() {
             tvStatus.text = "Controleren op updates..."
             btnCheck.isEnabled = false
 
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    val response = withContext(Dispatchers.IO) {
-                        URL(GITHUB_URL).readText()
-                    }
-                    val json = JSONObject(response)
-                    val latestVersion = json.optString("version", CURRENT_VERSION)
-
+            updateManager.checkForUpdates { hasUpdate, latestVersion, changelog ->
+                activity?.runOnUiThread {
                     tvLatest.text = "Laatste versie: $latestVersion"
                     progressBar.visibility = View.GONE
                     btnCheck.isEnabled = true
 
-                    if (latestVersion != CURRENT_VERSION) {
+                    if (hasUpdate) {
                         tvStatus.text = "Update beschikbaar: v$latestVersion"
                         btnDownload.visibility = View.VISIBLE
+                        btnDownload.setOnClickListener {
+                            showInstallDialog(latestVersion, changelog)
+                        }
                     } else {
                         tvStatus.text = "Je hebt de laatste versie!"
+                        btnDownload.visibility = View.GONE
                     }
-                } catch (e: Exception) {
-                    progressBar.visibility = View.GONE
-                    btnCheck.isEnabled = true
-                    tvStatus.text = "Fout bij controleren: ${e.message}"
                 }
             }
         }
+    }
 
-        btnDownload.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(APK_URL))
-            startActivity(intent)
-        }
+    private fun showInstallDialog(version: String, changelog: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Update beschikbaar: v$version")
+            .setMessage(buildString {
+                appendLine("Wil je de update downloaden en installeren?")
+                if (changelog.isNotEmpty()) {
+                    appendLine()
+                    appendLine("Wat is er nieuw:")
+                    appendLine(changelog)
+                }
+            })
+            .setPositiveButton("Download & Installeer") { _, _ ->
+                updateManager.downloadAndInstall()
+            }
+            .setNegativeButton("Annuleren", null)
+            .show()
     }
 }
