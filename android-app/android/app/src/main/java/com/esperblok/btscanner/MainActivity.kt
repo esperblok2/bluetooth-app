@@ -1,10 +1,14 @@
 package com.esperblok.btscanner
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.esperblok.btscanner.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -15,6 +19,14 @@ class MainActivity : AppCompatActivity() {
     lateinit var securityManager: SecurityManager
     lateinit var hidHelper: HidHelper
     lateinit var deviceNotesManager: DeviceNotesManager
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (results.values.all { it }) {
+            bluetoothHelper.loadPairedDevices()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         deviceNotesManager = DeviceNotesManager(this)
 
         bluetoothHelper.registerReceiver()
+        requestBluetoothPermissions()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
 
@@ -44,6 +57,24 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_update -> { loadFragment(UpdateFragment()); true }
                 else -> false
             }
+        }
+    }
+
+    private fun requestBluetoothPermissions() {
+        val perms = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            perms.add(Manifest.permission.BLUETOOTH_SCAN)
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            perms.add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            perms.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        if (perms.isNotEmpty()) {
+            permissionLauncher.launch(perms.toTypedArray())
+        } else {
+            bluetoothHelper.loadPairedDevices()
         }
     }
 

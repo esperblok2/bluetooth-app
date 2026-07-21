@@ -204,7 +204,11 @@ class BluetoothHelper(private val context: Context) {
             addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         }
         context.registerReceiver(pairedReceiver, filter)
-        loadPairedDevices()
+        try {
+            loadPairedDevices()
+        } catch (e: SecurityException) {
+            Log.w(tag, "BLUETOOTH_CONNECT not yet granted, skipping paired load")
+        }
     }
 
     fun unregisterReceiver() {
