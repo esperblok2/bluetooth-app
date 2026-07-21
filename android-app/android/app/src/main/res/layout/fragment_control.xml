@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Media Controls -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Media Besturing"
+            android:textColor="@color/accent"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_prev"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="⏮"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_play"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:text="▶"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/green" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_next"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:text="⏭"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_stop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="⏹"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/red" />
+
+        </LinearLayout>
+
+        <!-- Volume Controls -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Volume"
+            android:textColor="@color/accent"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_vol_down"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="🔉"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_mute"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:text="🔇"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_vol_up"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="🔊"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+        </LinearLayout>
+
+        <!-- Keyboard Controls -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Toetsenbord"
+            android:textColor="@color/accent"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_key_up"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="▲"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_key_enter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="Enter"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/accent3" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_key_left"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="◀"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_key_right"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="▶"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_key_down"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="▼"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_key_backspace"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="⌫"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/card" />
+
+        </GridLayout>
+
+        <!-- Text Input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/et_type"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Typ tekst..."
+                android:textColor="@color/text"
+                android:background="@color/card"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Typ"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/accent" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
