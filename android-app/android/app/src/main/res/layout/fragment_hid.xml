@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⌨️ HID Controller"
+            android:textColor="@color/accent"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_hid_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Niet verbonden"
+            android:textColor="@color/dim"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/et_hid_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="BT adres (bijv. AA:BB:CC:DD:EE:FF)"
+            android:textColor="@color/text"
+            android:textColorHint="@color/dim"
+            android:background="@color/card"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_hid_connect"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Verbind"
+                android:backgroundTint="@color/green"
+                android:textColor="@color/bg"
+                android:layout_marginEnd="4dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_hid_disconnect"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Ontkoppel"
+                android:backgroundTint="@color/red"
+                android:textColor="@color/white"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⌨️ Keyboard"
+            android:textColor="@color/accent"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="4"
+            android:layout_marginBottom="8dp">
+
+            <Button android:id="@+id/hid_key_up" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="↑" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_down" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="↓" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_enter" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="Enter" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+
+            <Button android:id="@+id/hid_key_left" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="←" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_right" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="→" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_back" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="⌫" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+
+            <Button android:id="@+id/hid_key_space" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="Space" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_tab" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="Tab" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_esc" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="Esc" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+
+            <Button android:id="@+id/hid_key_a" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="A" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_b" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="B" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_key_c" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="C" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+        </GridLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/et_hid_type"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Typ tekst..."
+                android:textColor="@color/text"
+                android:textColorHint="@color/dim"
+                android:background="@color/card"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_hid_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Typ"
+                android:backgroundTint="@color/accent"
+                android:textColor="@color/bg" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🖱️ Mouse"
+            android:textColor="@color/accent"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="3">
+
+            <Button android:id="@+id/hid_mouse_up" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="⬆" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_mouse_left_move" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="⬅" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_mouse_right_move" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="➡" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+
+            <Button android:id="@+id/hid_mouse_down" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="⬇" android:textColor="@color/text" android:backgroundTint="@color/accent3" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_mouse_left" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="L" android:textColor="@color/text" android:backgroundTint="@color/green" android:layout_margin="2dp" />
+            <Button android:id="@+id/hid_mouse_right" android:layout_width="0dp" android:layout_height="48dp" android:layout_columnWeight="1" android:text="R" android:textColor="@color/text" android:backgroundTint="@color/green" android:layout_margin="2dp" />
+        </GridLayout>
+
+    </LinearLayout>
+</ScrollView>
