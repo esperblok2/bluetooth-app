@@ -859,8 +859,15 @@ class BluetoothApp:
         control_frame = tk.Frame(tab_frame, bg=t("bg"))
         self.tab_contents.append(control_frame)
 
-        self.control_inner = tk.Frame(control_frame, bg=t("bg"))
-        self.control_inner.pack(fill=tk.BOTH, expand=True)
+        self.control_canvas = tk.Canvas(control_frame, bg=t("bg"), highlightthickness=0)
+        self.control_scrollbar = tk.Scrollbar(control_frame, orient="vertical", command=self.control_canvas.yview)
+        self.control_inner = tk.Frame(self.control_canvas, bg=t("bg"))
+        self.control_inner.bind("<Configure>", lambda e: self.control_canvas.configure(scrollregion=self.control_canvas.bbox("all")))
+        self.control_window = self.control_canvas.create_window((0, 0), window=self.control_inner, anchor="nw")
+        self.control_canvas.configure(yscrollcommand=self.control_scrollbar.set)
+        self.control_canvas.pack(side="left", fill="both", expand=True)
+        self.control_scrollbar.pack(side="right", fill="y")
+        self.control_canvas.bind("<Configure>", lambda e: self.control_canvas.itemconfig(self.control_window, width=e.width))
 
         # Tab 4: Beveiliging
         security_frame = tk.Frame(tab_frame, bg=t("bg"))
@@ -876,12 +883,7 @@ class BluetoothApp:
         self.security_scrollbar.pack(side="right", fill="y")
         self.security_canvas.bind("<Configure>", lambda e: self.security_canvas.itemconfig(self.security_window, width=e.width))
 
-        # Tab 6: Update
-        update_frame = tk.Frame(tab_frame, bg=t("bg"))
-        self.tab_contents.append(update_frame)
-
-        self.update_inner = tk.Frame(update_frame, bg=t("bg"))
-        self.update_inner.pack(fill=tk.BOTH, expand=True)
+        # Tab 5: Batterij
         bat_frame = tk.Frame(tab_frame, bg=t("bg"))
         self.tab_contents.append(bat_frame)
 
@@ -895,6 +897,20 @@ class BluetoothApp:
         self.bat_scrollbar.pack(side="right", fill="y")
         self.bat_canvas.bind("<Configure>", lambda e: self.bat_canvas.itemconfig(self.bat_window, width=e.width))
 
+        # Tab 6: Update
+        update_frame = tk.Frame(tab_frame, bg=t("bg"))
+        self.tab_contents.append(update_frame)
+
+        self.update_canvas = tk.Canvas(update_frame, bg=t("bg"), highlightthickness=0)
+        self.update_scrollbar = tk.Scrollbar(update_frame, orient="vertical", command=self.update_canvas.yview)
+        self.update_inner = tk.Frame(self.update_canvas, bg=t("bg"))
+        self.update_inner.bind("<Configure>", lambda e: self.update_canvas.configure(scrollregion=self.update_canvas.bbox("all")))
+        self.update_window = self.update_canvas.create_window((0, 0), window=self.update_inner, anchor="nw")
+        self.update_canvas.configure(yscrollcommand=self.update_scrollbar.set)
+        self.update_canvas.pack(side="left", fill="both", expand=True)
+        self.update_scrollbar.pack(side="right", fill="y")
+        self.update_canvas.bind("<Configure>", lambda e: self.update_canvas.itemconfig(self.update_window, width=e.width))
+
         # Toon eerste tab
         for i, frame in enumerate(self.tab_contents):
             if i == 0:
@@ -905,6 +921,29 @@ class BluetoothApp:
         # Laad data
         self.load_paired_devices()
         self.refresh_battery_tab()
+
+        # Muiswiel scrolling voor alle canvassen
+        def on_mousewheel(event):
+            for canvas in [self.canvas, self.paired_canvas, self.local_canvas,
+                           self.control_canvas, self.security_canvas,
+                           self.bat_canvas, self.update_canvas]:
+                try:
+                    canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+                except Exception:
+                    pass
+
+        self.root.bind_all("<MouseWheel>", on_mousewheel)
+        self.root.bind_all("<Button-4>", lambda e: self._scroll_all(-1))
+        self.root.bind_all("<Button-5>", lambda e: self._scroll_all(1))
+
+    def _scroll_all(self, direction):
+        for canvas in [self.canvas, self.paired_canvas, self.local_canvas,
+                       self.control_canvas, self.security_canvas,
+                       self.bat_canvas, self.update_canvas]:
+            try:
+                canvas.yview_scroll(direction, "units")
+            except Exception:
+                pass
 
     def switch_tab(self, idx):
         self.current_tab = idx
@@ -1551,6 +1590,236 @@ class BluetoothApp:
                   bg=t("accent3"), fg=t("text"), relief="flat", cursor="hand2",
                   command=self.load_controls, padx=12, pady=4).pack(anchor="w", padx=20, pady=(8, 0))
 
+        # ─── Toetsenbord & Muis ─────────────────────────────────
+        tk.Label(self.control_inner, text="Toetsenbord & Muis (HID)",
+                 font=("Segoe UI", 16, "bold"),
+                 bg=t("bg"), fg=t("accent")).pack(anchor="w", padx=20, pady=(20, 4))
+        tk.Label(self.control_inner, text="Bestuur verbonden HID apparaten (toetsenbord/muis)",
+                 font=("Segoe UI", 10), bg=t("bg"), fg=t("dim")).pack(anchor="w", padx=20, pady=(0, 12))
+
+        # Apparaat selectie
+        paired = get_paired_devices()
+        hid_devices = [d for d in paired if d.get("connected") == "yes"]
+
+        if not hid_devices:
+            info_card = tk.Frame(self.control_inner, bg=t("card"),
+                                 highlightbackground=t("border"), highlightthickness=1)
+            info_card.pack(fill=tk.X, padx=20, pady=6)
+            tk.Label(info_card, text="Geen verbonden apparaten gevonden",
+                     font=("Segoe UI", 11), bg=t("card"), fg=t("dim")).pack(pady=16)
+            tk.Label(info_card, text="Verbind eerst een apparaat via de Gekoppeld tab",
+                     font=("Segoe UI", 9), bg=t("card"), fg=t("dim")).pack(pady=(0, 16))
+        else:
+            # Apparaat kiezer
+            sel_card = tk.Frame(self.control_inner, bg=t("card"),
+                                highlightbackground=t("glow"), highlightthickness=1)
+            sel_card.pack(fill=tk.X, padx=20, pady=6)
+            sel_inner = tk.Frame(sel_card, bg=t("card"))
+            sel_inner.pack(fill=tk.X, padx=12, pady=10)
+
+            tk.Label(sel_inner, text="Kies apparaat:", font=("Segoe UI", 10, "bold"),
+                     bg=t("card"), fg=t("accent")).pack(anchor="w", pady=(0, 4))
+
+            self.hid_device_var = tk.StringVar(value=hid_devices[0]["address"] if hid_devices else "")
+            for dev in hid_devices:
+                addr = dev["address"]
+                name = dev.get("alias") or dev.get("name", addr)
+                emoji = get_device_emoji(name)
+                rb = tk.Radiobutton(sel_inner, text=f"{emoji} {name} ({addr})",
+                                    variable=self.hid_device_var, value=addr,
+                                    bg=t("card"), fg=t("text"), selectcolor=t("bg2"),
+                                    activebackground=t("card"), activeforeground=t("accent"),
+                                    font=("Segoe UI", 10))
+                rb.pack(anchor="w", pady=1)
+
+            # Toetsenbord sectie
+            kb_card = tk.Frame(self.control_inner, bg=t("card"),
+                               highlightbackground=t("border"), highlightthickness=1)
+            kb_card.pack(fill=tk.X, padx=20, pady=6)
+            kb_inner = tk.Frame(kb_card, bg=t("card"))
+            kb_inner.pack(fill=tk.X, padx=12, pady=10)
+
+            tk.Label(kb_inner, text="Toetsenbord", font=("Segoe UI", 11, "bold"),
+                     bg=t("card"), fg=t("accent")).pack(anchor="w", pady=(0, 8))
+
+            # Sneltoetsen
+            shortcut_row = tk.Frame(kb_inner, bg=t("card"))
+            shortcut_row.pack(fill=tk.X, pady=(0, 8))
+
+            small_btn = {"font": ("Segoe UI", 9), "bg": t("accent3"), "fg": t("text"),
+                         "relief": "flat", "cursor": "hand2", "bd": 0, "padx": 8, "pady": 3}
+
+            shortcuts = [
+                ("Ctrl+C", ["ctrl", "c"]), ("Ctrl+V", ["ctrl", "v"]),
+                ("Ctrl+Z", ["ctrl", "z"]), ("Ctrl+A", ["ctrl", "a"]),
+                ("Ctrl+S", ["ctrl", "s"]), ("Ctrl+X", ["ctrl", "x"]),
+                ("Tab", ["tab"]), ("Esc", ["esc"]),
+            ]
+            for label, keys in shortcuts:
+                def cmd(k=keys):
+                    self._hid_send_combo(k)
+                tk.Button(shortcut_row, text=label, command=cmd, **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+
+            # Enter / Backspace / Spatie
+            nav_row = tk.Frame(kb_inner, bg=t("card"))
+            nav_row.pack(fill=tk.X, pady=(0, 8))
+            tk.Button(nav_row, text="Enter", command=lambda: self._hid_send_key("enter"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+            tk.Button(nav_row, text="Backspace", command=lambda: self._hid_send_key("backspace"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+            tk.Button(nav_row, text="Spatie", command=lambda: self._hid_send_key("space"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+            tk.Button(nav_row, text="Pijl ↑", command=lambda: self._hid_send_key("up"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+            tk.Button(nav_row, text="Pijl ↓", command=lambda: self._hid_send_key("down"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+            tk.Button(nav_row, text="Pijl ←", command=lambda: self._hid_send_key("left"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+            tk.Button(nav_row, text="Pijl →", command=lambda: self._hid_send_key("right"), **small_btn).pack(side=tk.LEFT, padx=(0, 3))
+
+            # Tekst typen
+            type_frame = tk.Frame(kb_inner, bg=t("card"))
+            type_frame.pack(fill=tk.X, pady=(4, 0))
+            tk.Label(type_frame, text="Tekst typen:", font=("Segoe UI", 9),
+                     bg=t("card"), fg=t("dim")).pack(side=tk.LEFT)
+            self.hid_text_entry = tk.Entry(type_frame, font=("Segoe UI", 10), bg=t("bg"), fg=t("text"),
+                                          insertbackground=t("accent"), relief="flat")
+            self.hid_text_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(8, 8), ipady=3)
+            tk.Button(type_frame, text="Typ", command=self._hid_send_text,
+                      font=("Segoe UI", 9, "bold"), bg=t("accent"), fg="#fff",
+                      relief="flat", cursor="hand2", padx=12).pack(side=tk.LEFT)
+
+            # Muis sectie
+            mouse_card = tk.Frame(self.control_inner, bg=t("card"),
+                                  highlightbackground=t("border"), highlightthickness=1)
+            mouse_card.pack(fill=tk.X, padx=20, pady=6)
+            mouse_inner = tk.Frame(mouse_card, bg=t("card"))
+            mouse_inner.pack(fill=tk.X, padx=12, pady=10)
+
+            tk.Label(mouse_inner, text="Muis", font=("Segoe UI", 11, "bold"),
+                     bg=t("card"), fg=t("accent")).pack(anchor="w", pady=(0, 8))
+
+            # Klik knoppen
+            click_row = tk.Frame(mouse_inner, bg=t("card"))
+            click_row.pack(fill=tk.X, pady=(0, 8))
+
+            tk.Button(click_row, text="Linker Klik", command=lambda: self._hid_mouse_click("left"),
+                      font=("Segoe UI", 10, "bold"), bg=t("accent3"), fg=t("text"),
+                      relief="flat", cursor="hand2", padx=16, pady=6).pack(side=tk.LEFT, padx=(0, 4))
+            tk.Button(click_row, text="Rechter Klik", command=lambda: self._hid_mouse_click("right"),
+                      font=("Segoe UI", 10, "bold"), bg=t("accent3"), fg=t("text"),
+                      relief="flat", cursor="hand2", padx=16, pady=6).pack(side=tk.LEFT, padx=(0, 4))
+            tk.Button(click_row, text="Middel Klik", command=lambda: self._hid_mouse_click("middle"),
+                      font=("Segoe UI", 10), bg=t("accent3"), fg=t("text"),
+                      relief="flat", cursor="hand2", padx=12, pady=6).pack(side=tk.LEFT)
+
+            # Beweeg muis
+            move_frame = tk.Frame(mouse_inner, bg=t("card"))
+            move_frame.pack(fill=tk.X, pady=(0, 8))
+            tk.Label(move_frame, text="Beweeg:", font=("Segoe UI", 9),
+                     bg=t("card"), fg=t("dim")).pack(side=tk.LEFT)
+
+            tk.Button(move_frame, text="←", command=lambda: self._hid_mouse_move(-50, 0), **small_btn).pack(side=tk.LEFT, padx=2)
+            tk.Button(move_frame, text="→", command=lambda: self._hid_mouse_move(50, 0), **small_btn).pack(side=tk.LEFT, padx=2)
+            tk.Button(move_frame, text="↑", command=lambda: self._hid_mouse_move(0, -50), **small_btn).pack(side=tk.LEFT, padx=2)
+            tk.Button(move_frame, text="↓", command=lambda: self._hid_mouse_move(0, 50), **small_btn).pack(side=tk.LEFT, padx=2)
+
+            # Scroll
+            scroll_frame = tk.Frame(mouse_inner, bg=t("card"))
+            scroll_frame.pack(fill=tk.X)
+            tk.Label(scroll_frame, text="Scroll:", font=("Segoe UI", 9),
+                     bg=t("card"), fg=t("dim")).pack(side=tk.LEFT)
+            tk.Button(scroll_frame, text="Scroll ↑", command=lambda: self._hid_mouse_scroll(3), **small_btn).pack(side=tk.LEFT, padx=(8, 2))
+            tk.Button(scroll_frame, text="Scroll ↓", command=lambda: self._hid_mouse_scroll(-3), **small_btn).pack(side=tk.LEFT, padx=2)
+
+    def _hid_get_address(self):
+        if hasattr(self, "hid_device_var"):
+            return self.hid_device_var.get()
+        paired = get_paired_devices()
+        for d in paired:
+            if d.get("connected") == "yes":
+                return d["address"]
+        return None
+
+    def _hid_send_key(self, key):
+        addr = self._hid_get_address()
+        if not addr:
+            messagebox.showwarning("Let op", "Selecteer eerst een apparaat!")
+            return
+        try:
+            from hid_controller import quick_key
+            threading.Thread(target=lambda: asyncio.run(quick_key(addr, key)), daemon=True).start()
+        except Exception as e:
+            messagebox.showerror("Fout", f"Kon niet versturen: {e}")
+
+    def _hid_send_combo(self, keys):
+        addr = self._hid_get_address()
+        if not addr:
+            messagebox.showwarning("Let op", "Selecteer eerst een apparaat!")
+            return
+        try:
+            from hid_controller import quick_key, SPECIAL_KEYS
+            modifier = 0
+            key = None
+            for k in keys:
+                k_lower = k.lower()
+                if k_lower in SPECIAL_KEYS:
+                    modifier |= SPECIAL_KEYS[k_lower][1]
+                else:
+                    key = k_lower
+            def _do():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(quick_key(addr, key or "a", modifier if modifier else None))
+            threading.Thread(target=_do, daemon=True).start()
+        except Exception as e:
+            messagebox.showerror("Fout", f"Kon niet versturen: {e}")
+
+    def _hid_send_text(self):
+        addr = self._hid_get_address()
+        text = self.hid_text_entry.get() if hasattr(self, "hid_text_entry") else ""
+        if not addr:
+            messagebox.showwarning("Let op", "Selecteer eerst een apparaat!")
+            return
+        if not text:
+            return
+        try:
+            from hid_controller import quick_type
+            threading.Thread(target=lambda: asyncio.run(quick_type(addr, text)), daemon=True).start()
+            self.hid_text_entry.delete(0, tk.END)
+        except Exception as e:
+            messagebox.showerror("Fout", f"Kon niet typen: {e}")
+
+    def _hid_mouse_click(self, button):
+        addr = self._hid_get_address()
+        if not addr:
+            messagebox.showwarning("Let op", "Selecteer eerst een apparaat!")
+            return
+        try:
+            from hid_controller import quick_click
+            threading.Thread(target=lambda: asyncio.run(quick_click(addr, button)), daemon=True).start()
+        except Exception as e:
+            messagebox.showerror("Fout", f"Kon niet klikken: {e}")
+
+    def _hid_mouse_move(self, dx, dy):
+        addr = self._hid_get_address()
+        if not addr:
+            return
+        try:
+            from hid_controller import quick_move
+            threading.Thread(target=lambda: asyncio.run(quick_move(addr, dx, dy)), daemon=True).start()
+        except Exception:
+            pass
+
+    def _hid_mouse_scroll(self, amount):
+        addr = self._hid_get_address()
+        if not addr:
+            return
+        try:
+            from hid_controller import HIDController, get_controller
+            def _do():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                ctrl = loop.run_until_complete(get_controller(addr))
+                loop.run_until_complete(ctrl.mouse_scroll(amount))
+            threading.Thread(target=_do, daemon=True).start()
+        except Exception:
+            pass
+
     # ─── Beveiliging Tab ────────────────────────────────────────
 
     def load_security(self):
@@ -1561,8 +1830,25 @@ class BluetoothApp:
 
         tk.Label(self.security_inner, text="Beveiliging", font=("Segoe UI", 16, "bold"),
                  bg=t("bg"), fg=t("accent")).pack(anchor="w", padx=16, pady=(12, 4))
-        tk.Label(self.security_inner, text="Beheer welke apparaten toegang hebben",
+        tk.Label(self.security_inner, text="Beheer welke Bluetooth apparaten toegang hebben tot jouw PC",
                  font=("Segoe UI", 10), bg=t("bg"), fg=t("dim")).pack(anchor="w", padx=16, pady=(0, 12))
+
+        # Uitleg
+        info_box = tk.Frame(self.security_inner, bg=t("bg2"), highlightbackground=t("accent"), highlightthickness=1)
+        info_box.pack(fill=tk.X, padx=16, pady=(0, 8))
+        info_box_inner = tk.Frame(info_box, bg=t("bg2"))
+        info_box_inner.pack(fill=tk.X, padx=12, pady=8)
+        tk.Label(info_box_inner, text="Hoe werkt het?", font=("Segoe UI", 10, "bold"),
+                 bg=t("bg2"), fg=t("accent")).pack(anchor="w")
+        for line in [
+            "1. Het MAC-adres is van het BLUETOOTH APPARAAT (niet je PC)",
+            "2. Vind het MAC-adres bij: Gekoppeld tab → onder de naam",
+            "3. Whitelist = alleen deze apparaten mogen verbinden",
+            "4. Blokkeer = deze apparaten worden altijd geweigerd",
+            "5. Geen whitelist = iedereen mag verbinden (behalve geblokkeerde)",
+        ]:
+            tk.Label(info_box_inner, text=f"  {line}", font=("Segoe UI", 9),
+                     bg=t("bg2"), fg=t("dim")).pack(anchor="w")
 
         # PIN instellingen
         pin_card = tk.Frame(self.security_inner, bg=t("card"),
@@ -1616,30 +1902,76 @@ class BluetoothApp:
 
         tk.Label(wl_inner, text="Toegestane Apparaten (Whitelist)", font=("Segoe UI", 12, "bold"),
                  bg=t("card"), fg=t("green")).pack(anchor="w")
+        tk.Label(wl_inner, text="Alleen deze Bluetooth apparaten mogen met je PC verbinden",
+                 font=("Segoe UI", 9), bg=t("card"), fg=t("dim")).pack(anchor="w", pady=(0, 4))
 
         if sec["whitelist"]:
             for addr in sec["whitelist"]:
                 row = tk.Frame(wl_inner, bg=t("card"))
                 row.pack(fill=tk.X, pady=2)
-                tk.Label(row, text=f"  {addr}", font=("Consolas", 9),
+                # Zoek naam bij dit adres
+                dev_name = ""
+                for d in get_paired_devices():
+                    if d["address"] == addr:
+                        dev_name = d.get("name", "")
+                        break
+                display = f"  {addr}"
+                if dev_name:
+                    display += f"  ({dev_name})"
+                tk.Label(row, text=display, font=("Consolas", 9),
                          bg=t("card"), fg=t("text")).pack(side=tk.LEFT)
                 tk.Button(row, text="Verwijder", font=("Segoe UI", 8),
                           bg=t("red"), fg="#ffffff", relief="flat", cursor="hand2",
                           command=lambda a=addr: self.remove_from_whitelist(a),
                           padx=8).pack(side=tk.RIGHT)
         else:
-            tk.Label(wl_inner, text="  Geen apparaten ingesteld (alleen blokkeringen)",
+            tk.Label(wl_inner, text="  Geen apparaten op whitelist (iedereen mag verbinden)",
                      font=("Segoe UI", 9), bg=t("card"), fg=t("dim")).pack(anchor="w", pady=4)
 
-        # Nieuw apparaat toevoegen
-        add_frame = tk.Frame(wl_inner, bg=t("card"))
-        add_frame.pack(fill=tk.X, pady=(8, 0))
-        self.wl_entry = tk.Entry(add_frame, font=("Consolas", 9), bg=t("bg"), fg=t("text"),
-                                 insertbackground=t("accent"), relief="flat")
-        self.wl_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=4)
-        tk.Button(add_frame, text="Toestaan", font=("Segoe UI", 9),
-                  bg=t("green"), fg="#000000", relief="flat", cursor="hand2",
-                  command=self.add_to_whitelist_action, padx=12).pack(side=tk.LEFT, padx=(8, 0))
+        # Kies uit gekoppelde apparaten
+        paired = get_paired_devices()
+        if paired:
+            tk.Label(wl_inner, text="Kies een gekoppeld apparaat:", font=("Segoe UI", 9, "bold"),
+                     bg=t("card"), fg=t("text")).pack(anchor="w", pady=(8, 4))
+
+            self.wl_device_var = tk.StringVar()
+            for dev in paired:
+                addr = dev["address"]
+                name = dev.get("name", "Onbekend")
+                emoji = get_device_emoji(name)
+                is_in_wl = addr in sec["whitelist"]
+                prefix = "✓ " if is_in_wl else "  "
+                rb = tk.Radiobutton(wl_inner, text=f"{prefix}{emoji} {name} ({addr})",
+                                    variable=self.wl_device_var, value=addr,
+                                    bg=t("card"), fg=t("text"), selectcolor=t("bg2"),
+                                    activebackground=t("card"), activeforeground=t("accent"),
+                                    font=("Segoe UI", 9))
+                rb.pack(anchor="w", pady=1)
+
+            def add_selected():
+                addr = self.wl_device_var.get() if hasattr(self, "wl_device_var") else ""
+                if addr:
+                    add_to_whitelist(addr)
+                    self.load_security()
+                else:
+                    messagebox.showwarning("Let op", "Selecteer eerst een apparaat!")
+
+            tk.Button(wl_inner, text="Geselecteerd Toestaan", font=("Segoe UI", 9, "bold"),
+                      bg=t("green"), fg="#000000", relief="flat", cursor="hand2",
+                      command=add_selected, padx=12, pady=4).pack(anchor="w", pady=(8, 0))
+        else:
+            # Handmatig invoeren
+            tk.Label(wl_inner, text="Of voer MAC-adres handmatig in:", font=("Segoe UI", 9),
+                     bg=t("card"), fg=t("dim")).pack(anchor="w", pady=(8, 4))
+            add_frame = tk.Frame(wl_inner, bg=t("card"))
+            add_frame.pack(fill=tk.X)
+            self.wl_entry = tk.Entry(add_frame, font=("Consolas", 9), bg=t("bg"), fg=t("text"),
+                                     insertbackground=t("accent"), relief="flat",
+                                     placeholder="bv 89:7E:2C:69:BC:EB")
+            self.wl_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=4)
+            tk.Button(add_frame, text="Toestaan", font=("Segoe UI", 9),
+                      bg=t("green"), fg="#000000", relief="flat", cursor="hand2",
+                      command=self.add_to_whitelist_action, padx=12).pack(side=tk.LEFT, padx=(8, 0))
 
         # Blokkeringen
         bl_card = tk.Frame(self.security_inner, bg=t("card"),

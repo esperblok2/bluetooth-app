@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BT Scanner</string>
+    <string name="tab_scan">Scan</string>
+    <string name="tab_paired">Gekoppeld</string>
+    <string name="tab_control">Besturing</string>
+    <string name="tab_battery">Batterij</string>
+    <string name="tab_local">Lokaal</string>
+    <string name="tab_security">Beveiliging</string>
+    <string name="btn_start_scan">Start Scan</string>
+    <string name="btn_stop_scan">Stop Scan</string>
+    <string name="btn_refresh">Vernieuw</string>
+    <string name="btn_connect">Verbind</string>
+    <string name="btn_disconnect">Ontkoppel</string>
+    <string name="no_devices">Geen apparaten gevonden</string>
+    <string name="scanning">Scannen naar Bluetooth apparaten...</string>
+    <string name="permission_required">Bluetooth permissie vereist</string>
+    <string name="status_ready">Klaar om te scannen</string>
+</resources>
