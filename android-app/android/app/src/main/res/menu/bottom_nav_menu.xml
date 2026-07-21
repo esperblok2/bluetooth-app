@@ -5,25 +5,13 @@
         android:icon="@android:drawable/stat_sys_data_bluetooth"
         android:title="Scan" />
     <item
-        android:id="@+id/nav_paired"
-        android:icon="@android:drawable/btn_star"
-        android:title="Gekoppeld" />
-    <item
         android:id="@+id/nav_control"
         android:icon="@android:drawable/ic_media_play"
         android:title="Besturing" />
     <item
-        android:id="@+id/nav_hid"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="HID" />
-    <item
-        android:id="@+id/nav_battery"
-        android:icon="@android:drawable/btn_star_big_on"
-        android:title="Batterij" />
-    <item
-        android:id="@+id/nav_local"
+        android:id="@+id/nav_info"
         android:icon="@android:drawable/ic_menu_info_details"
-        android:title="Lokaal" />
+        android:title="Info" />
     <item
         android:id="@+id/nav_security"
         android:icon="@android:drawable/ic_lock_lock"

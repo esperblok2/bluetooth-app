@@ -38,11 +38,8 @@ class MainActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_scan -> { loadFragment(ScanFragment()); true }
-                R.id.nav_paired -> { loadFragment(PairedFragment()); true }
                 R.id.nav_control -> { loadFragment(ControlFragment()); true }
-                R.id.nav_hid -> { loadFragment(HidFragment()); true }
-                R.id.nav_battery -> { loadFragment(BatteryFragment()); true }
-                R.id.nav_local -> { loadFragment(LocalFragment()); true }
+                R.id.nav_info -> { loadFragment(InfoFragment()); true }
                 R.id.nav_security -> { loadFragment(SecurityFragment()); true }
                 R.id.nav_update -> { loadFragment(UpdateFragment()); true }
                 else -> false

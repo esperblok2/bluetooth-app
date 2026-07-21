@@ -25,7 +25,8 @@ import kotlinx.coroutines.launch
 class ScanFragment : Fragment() {
 
     private lateinit var bluetoothHelper: BluetoothHelper
-    private lateinit var adapter: DeviceAdapter
+    private lateinit var scanAdapter: DeviceAdapter
+    private lateinit var pairedAdapter: DeviceAdapter
     private lateinit var btnScan: Button
     private lateinit var tvStatus: TextView
     private var isScanning = false
@@ -51,22 +52,29 @@ class ScanFragment : Fragment() {
         btnScan = view.findViewById(R.id.btn_scan)
         tvStatus = view.findViewById(R.id.tv_status)
         val rvDevices = view.findViewById<RecyclerView>(R.id.rv_devices)
+        val rvPaired = view.findViewById<RecyclerView>(R.id.rv_paired)
+        val tvPairedTitle = view.findViewById<TextView>(R.id.tv_paired_title)
 
-        adapter = DeviceAdapter { device, action ->
+        scanAdapter = DeviceAdapter { device, action ->
             when (action) {
                 "connect" -> connectDevice(device)
                 "info" -> showDeviceInfo(device)
             }
         }
+        pairedAdapter = DeviceAdapter { device, _ ->
+            showDeviceInfo(device)
+        }
 
         rvDevices.layoutManager = LinearLayoutManager(context)
-        rvDevices.adapter = adapter
+        rvDevices.adapter = scanAdapter
+        rvPaired.layoutManager = LinearLayoutManager(context)
+        rvPaired.adapter = pairedAdapter
 
         btnScan.setOnClickListener { checkPermissionsAndScan() }
 
         viewLifecycleOwner.lifecycleScope.launch {
             bluetoothHelper.devices.collect { devices ->
-                adapter.submitList(devices)
+                scanAdapter.submitList(devices)
             }
         }
 
@@ -75,6 +83,15 @@ class ScanFragment : Fragment() {
                 tvStatus.text = status
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            bluetoothHelper.pairedDevices.collect { devices ->
+                pairedAdapter.submitList(devices)
+                tvPairedTitle?.text = "Gekoppelde Apparaten (${devices.size})"
+            }
+        }
+
+        bluetoothHelper.loadPairedDevices()
     }
 
     private fun checkPermissionsAndScan() {
@@ -123,20 +140,16 @@ class ScanFragment : Fragment() {
     }
 
     private fun showDeviceInfo(device: BTDevice) {
-        val activity = activity as? MainActivity ?: return
-        val dialog = android.app.AlertDialog.Builder(requireContext())
+        android.app.AlertDialog.Builder(requireContext())
             .setTitle("${getEmoji(device.name)} ${device.name}")
             .setMessage(buildString {
                 appendLine("Adres: ${device.address}")
                 appendLine("Type: ${device.deviceType}")
                 appendLine("Gekoppeld: ${if (device.isPaired) "Ja" else "Nee"}")
-                if (device.batteryLevel != null) {
-                    appendLine("Batterij: ${device.batteryLevel}%")
-                }
+                if (device.batteryLevel != null) appendLine("Batterij: ${device.batteryLevel}%")
             })
             .setPositiveButton("Sluiten", null)
-            .create()
-        dialog.show()
+            .show()
     }
 
     private fun getEmoji(name: String): String {
